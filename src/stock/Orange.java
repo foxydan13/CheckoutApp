@@ -1,9 +1,11 @@
 package stock;
 
+import cart.Constants;
+
 public class Orange extends Item {
 
 	public Orange() {
-		super("Orange", 0.25);
+		super("Orange", Constants.orangePrice);
 	}
 
 }
