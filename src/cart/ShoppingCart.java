@@ -5,7 +5,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import stock.Apple;
 import stock.Item;
@@ -13,48 +15,44 @@ import stock.Orange;
 
 public class ShoppingCart {
 
-	private List<Item> products;
+	private Map<Item, Integer> products;
+
+    private static final Item ORANGE = new Orange();
+    private static final Item APPLE = new Apple();
 
 	public ShoppingCart() {
-		this.products = new ArrayList<Item>();
+		this.products = new HashMap<>();
 	}
 
-	public List<Item> getProducts() {
+	public Map<Item, Integer> getProducts() {
 		return products;
 	}
 
 	public void addItem(Item item) {
-		products.add(item);
+
+		products.computeIfPresent(item, (key, oldVal) -> oldVal + 1);
+		products.putIfAbsent(item,1);
+
 	}
 
 	public double getBasketTotal() {
 		double total = 0.0;
+        int appleCount = products.getOrDefault(APPLE, 0);
+        int orangeCount = products.getOrDefault(ORANGE, 0);
 		DecimalFormat df = new DecimalFormat("####0.00");
 
-		for (Item item : products) {
-			total += item.getPrice();
-		}
+        total += appleCount * APPLE.getPrice();
+        total += orangeCount * ORANGE.getPrice();
 
 		return Double.parseDouble(df.format(total));
 	}
 
 	public double getDiscountedBasketTotal() {
 		double discountedTotal = 0.0;
-		int appleCount = 0;
-		int orangeCount = 0;
+		int appleCount = products.getOrDefault(APPLE, 0);
+		int orangeCount = products.getOrDefault(ORANGE, 0);
 		DecimalFormat df = new DecimalFormat("####0.00");
 
-		for (Item item : products) {
-
-			if (item instanceof Apple) {
-				appleCount += 1;
-			} else {
-				if (item instanceof Orange) {
-					orangeCount += 1;
-				}
-			}
-		}
-		
 		discountedTotal += getAppleOfferTotal(appleCount);
 		discountedTotal += getOrangeOfferTotal(orangeCount);
 
@@ -63,16 +61,16 @@ public class ShoppingCart {
 	
 	public double getAppleOfferTotal(int numberOfApples){
 		double valueAfterOfferApplied = 0.0;
-		valueAfterOfferApplied += (numberOfApples / 2) * Constants.applePrice;
-		valueAfterOfferApplied += (numberOfApples % 2) * Constants.applePrice;
+		valueAfterOfferApplied += (numberOfApples / 2) * APPLE.getPrice();
+		valueAfterOfferApplied += (numberOfApples % 2) * APPLE.getPrice();
 		
 		return valueAfterOfferApplied;
 	}
 	
 	public double getOrangeOfferTotal(int numberOfOranges){
 		double valueAfterOfferApplied = 0.0;
-		valueAfterOfferApplied += (numberOfOranges / 3) * (Constants.orangePrice * 2);
-		valueAfterOfferApplied += (numberOfOranges % 3) * Constants.orangePrice;
+		valueAfterOfferApplied += (numberOfOranges / 3) * (ORANGE.getPrice());
+		valueAfterOfferApplied += (numberOfOranges % 3) * ORANGE.getPrice();
 
 		return valueAfterOfferApplied;
 	}
@@ -92,15 +90,14 @@ public class ShoppingCart {
 				String input = br.readLine().toString();
 
 				if (input.toUpperCase().equals("ORANGE")) {
-					Item orange = new Orange();
-					cart.addItem(orange);
+					cart.addItem(ORANGE);
 					System.out.println(Constants.addSuccessText + df.format(cart.getBasketTotal())
 							+ Constants.currentDiscountTotalText + df.format(cart.getDiscountedBasketTotal())
 							+ Constants.enterItemText);
 				} else {
 					if (input.toUpperCase().equals("APPLE")) {
-						Item apple = new Apple();
-						cart.addItem(apple);
+
+						cart.addItem(APPLE);
 						System.out.println(Constants.addSuccessText + df.format(cart.getBasketTotal())
 								+ Constants.currentDiscountTotalText + df.format(cart.getDiscountedBasketTotal())
 								+ Constants.enterItemText);
